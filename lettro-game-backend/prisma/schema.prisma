@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Player model - handles both registered and guest players
+
+model Player {
+  id        String   @id @default(cuid())
+  username  String   @unique @db.VarChar(50)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  avatar    String?  @db.VarChar(500)
+  isActive  Boolean  @default(true)
+  isVerified Boolean @default(false)
+  isGuest      Boolean   @default(false)
+  isOnline     Boolean   @default(false)
+  lastSeen     DateTime  @default(now())
+  
+  // Profile fields
+  firstName String?  @db.VarChar(100)
+  lastName  String?  @db.VarChar(100)
+  bio       String?  @db.VarChar(500)
+  
+  // Game stats
+  totalScore     Int @default(0)
+  gamesPlayed    Int @default(0)
+  gamesWon       Int @default(0)
+  longestWord    String? @db.VarChar(50)
+  averageScore   Float @default(0)
+  
+  // Security fields
+  passwordResetToken   String?   @db.VarChar(255)
+  passwordResetExpires DateTime?
+  emailVerificationToken String? @db.VarChar(255)
+  lastLogin            DateTime?
+  loginAttempts        Int       @default(0)
+  lockUntil           DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  
+  @@map("players")
+}
