@@ -48,3 +48,289 @@ model Player {
   
   @@map("players")
 }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Player model - handles both registered and guest players
+model Player {
+  id        String   @id @default(cuid())
+  username  String   @unique @db.VarChar(50)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  avatar    String?  @db.VarChar(500)
+  isActive  Boolean  @default(true)
+  isVerified Boolean @default(false)
+  isGuest      Boolean   @default(false)
+  isOnline     Boolean   @default(false)
+  lastSeen     DateTime  @default(now())
+  
+  // Profile fields
+  firstName String?  @db.VarChar(100)
+  lastName  String?  @db.VarChar(100)
+  bio       String?  @db.VarChar(500)
+  
+  // Game stats
+  totalScore     Int @default(0)
+  gamesPlayed    Int @default(0)
+  gamesWon       Int @default(0)
+  longestWord    String? @db.VarChar(50)
+  averageScore   Float @default(0)
+  
+  // Security fields
+  passwordResetToken   String?   @db.VarChar(255)
+  passwordResetExpires DateTime?
+  emailVerificationToken String? @db.VarChar(255)
+  lastLogin            DateTime?
+  loginAttempts        Int       @default(0)
+  lockUntil           DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  hostedRooms     Room[]         @relation("RoomHost")
+  roomMemberships RoomMember[]
+  gameParticipations GameParticipant[]
+  rounds         Round[]        @relation("RoundDrawer")
+  guesses        Guess[]
+  messages       ChatMessage[]
+  
+  @@map("players")
+}
+
+// Room model - manages game rooms
+model Room {
+  id          String    @id @default(cuid())
+  code        String    @unique @db.VarChar(10) // Room join code
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  
+  // Room settings
+  maxPlayers     Int      @default(6)
+  isPrivate      Boolean  @default(false)
+  requiresAuth   Boolean  @default(false)
+  password       String?  @db.VarChar(255)
+  
+  // Game settings
+  maxRounds      Int      @default(3)
+  roundDuration  Int      @default(60) // in seconds
+  drawingTime    Int      @default(60) // in seconds
+  wordHints      Boolean  @default(true)
+  allowCustomWords Boolean @default(false)
+  difficulty     Difficulty @default(MEDIUM)
+  
+  // Room status
+  status       RoomStatus @default(WAITING)
+  isActive     Boolean    @default(true)
+  
+  // Host information
+  hostId       String
+  host         Player     @relation("RoomHost", fields: [hostId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  lastActivity DateTime   @default(now())
+  
+  // Relations
+  members      RoomMember[]
+  games        Game[]
+  
+  @@map("rooms")
+}
+// Room membership model
+model RoomMember {
+  id       String @id @default(cuid())
+  roomId   String
+  playerId String
+  
+  // Member status
+  isActive Boolean   @default(true)
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  
+  // Permissions
+  isModerator Boolean @default(false)
+  canKick     Boolean @default(false)
+  
+  // Relations
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@unique([roomId, playerId])
+  @@map("room_members")
+}
+
+// Game model - individual game sessions
+model Game {
+  id        String    @id @default(cuid())
+  roomId    String
+  
+  // Game settings (copied from room at game start)
+  maxRounds      Int
+  roundDuration  Int
+  drawingTime    Int
+  wordHints      Boolean
+  difficulty     Difficulty
+  
+  // Game state
+  status         GameStatus @default(WAITING)
+  currentRound   Int        @default(0)
+  currentDrawer  String?
+  currentWord    String?    @db.VarChar(50)
+  
+  // Game timing
+  startedAt      DateTime?
+  endedAt        DateTime?
+  roundStartedAt DateTime?
+  roundEndsAt    DateTime?
+  
+  // Game results
+  winnerId       String?
+  winnerScore    Int?
+  
+  // Timestamps
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  
+  // Relations
+  room           Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  participants   GameParticipant[]
+  rounds         Round[]
+  chatMessages   ChatMessage[]
+  
+  @@map("games")
+}
+// Game participant model
+model GameParticipant {
+  id       String @id @default(cuid())
+  gameId   String
+  playerId String
+  
+  // Participation info
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  
+  // Game stats
+  score          Int     @default(0)
+  correctGuesses Int     @default(0)
+  wordsDrawn     Int     @default(0)
+  averageTime    Float   @default(0)
+  
+  // Status
+  isActive       Boolean @default(true)
+  isReady        Boolean @default(false)
+  
+  // Relations
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@unique([gameId, playerId])
+  @@map("game_participants")
+}
+
+// Round model - individual drawing rounds
+model Round {
+  id      String @id @default(cuid())
+  gameId  String
+  
+  // Round info
+  roundNumber Int
+  word        String @db.VarChar(50)
+  category    String @db.VarChar(50)
+  difficulty  Difficulty
+  
+  // Drawer info
+  drawerId    String
+  drawer      Player @relation("RoundDrawer", fields: [drawerId], references: [id], onDelete: Cascade)
+  
+  // Round timing
+  startedAt   DateTime
+  endedAt     DateTime?
+  duration    Int? // actual duration in seconds
+  
+  // Round results
+  winnerId    String?
+  winnerScore Int?
+  correctGuesses Int @default(0)
+  
+  // Drawing data
+  drawingData Json? // Store drawing strokes as JSON
+  
+  // Relations
+  game    Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  guesses Guess[]
+  
+  @@unique([gameId, roundNumber])
+  @@map("rounds")
+}
+
+// Guess model - player guesses during rounds
+model Guess {
+  id       String @id @default(cuid())
+  roundId  String
+  playerId String
+  
+  // Guess content
+  guess      String   @db.VarChar(100)
+  isCorrect  Boolean  @default(false)
+  
+  // Scoring
+  points     Int      @default(0)
+  timeToGuess Int?    // time in seconds to make the guess
+  
+  // Timestamps
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  round  Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@map("guesses")
+}
+
+// Chat message model
+model ChatMessage {
+  id       String @id @default(cuid())
+  gameId   String?
+  playerId String
+  
+  // Message content
+  message   String      @db.VarChar(500)
+  type      MessageType @default(CHAT)
+  
+  // Timestamps
+  createdAt DateTime    @default(now())
+  
+  // Relations
+  game   Game?  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@map("chat_messages")
+}
+
+// Word bank model for game words
+model Word {
+  id         String     @id @default(cuid())
+  word       String     @unique @db.VarChar(50)
+  category   String     @db.VarChar(50)
+  difficulty Difficulty @default(MEDIUM)
+  
+  // Word metadata
+  isActive   Boolean    @default(true)
+  popularity Int        @default(0) // How often this word is used
+  
+  // Timestamps
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  
+  @@map("words")
+}

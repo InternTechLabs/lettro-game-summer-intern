@@ -60,7 +60,7 @@
     "exec": "tsx src/server.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.10.1",
+    "@prisma/client": "^6.10.1", 
     "bcryptjs": "^3.0.2",
     "compression": "^1.8.0",
     "connect-redis": "^9.0.0",
@@ -84,7 +84,6 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@types/*": "...",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
@@ -94,7 +93,6 @@
     "@types/morgan": "^1.9.10",
     "@types/nodemailer": "^6.4.17",
     "@types/ws": "^8.18.1",
-    "@typescript-eslint/*": "...",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.1",
