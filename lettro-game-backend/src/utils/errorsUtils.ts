@@ -7,6 +7,8 @@ export class AppError extends Error {
   public readonly timestamp: string
   public readonly details?: any
 
+  
+
   constructor(
     message: string,
     statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
