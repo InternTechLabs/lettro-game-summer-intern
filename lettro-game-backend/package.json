@@ -27,7 +27,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "docker:dev": "./scripts/docker-deploy.sh development",
+    "docker:dev": "bash ./scripts/docker-deploy.sh development",
     "docker:staging": "./scripts/docker-deploy.sh staging",
     "docker:prod": "./scripts/docker-deploy.sh production",
     "docker:stop": "docker compose down",
@@ -60,7 +60,7 @@
     "exec": "tsx src/server.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.10.1", 
+    "@prisma/client": "^6.10.1",
     "bcryptjs": "^3.0.2",
     "compression": "^1.8.0",
     "connect-redis": "^9.0.0",

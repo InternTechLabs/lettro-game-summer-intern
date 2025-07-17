@@ -22,7 +22,7 @@ export const MESSAGES = {
     ACCOUNT_DEACTIVATED: 'Account deactivated successfully',
     ACCOUNT_REACTIVATED: 'Account reactivated successfully',
     REPORT_SUBMITTED: 'Report submitted successfully',
-    PLAYER_UNBLOCKED: 'Player unblocked successfully',
+    PLAYER_UNBLOCKED: 'Player unblocked successfully'
   },
 
   // Error Messages
@@ -105,7 +105,7 @@ export const MESSAGES = {
     FILE_NOT_FOUND: 'File not found',
     FILE_TOO_LARGE: 'File size exceeds limit',
     INVALID_FILE_TYPE: 'Invalid file type',
-    UPLOAD_FAILED: 'File upload failed',
+    UPLOAD_FAILED: 'File upload failed'
   },
 
   // Validation Messages
@@ -114,22 +114,22 @@ export const MESSAGES = {
     USERNAME_MIN_LENGTH: 'Username must be at least 3 characters',
     USERNAME_MAX_LENGTH: 'Username must be less than 50 characters',
     USERNAME_INVALID_CHARS: 'Username can only contain letters, numbers, underscore and dash',
-    
+
     EMAIL_REQUIRED: 'Email is required',
     EMAIL_INVALID: 'Invalid email format',
     EMAIL_MAX_LENGTH: 'Email must be less than 255 characters',
-    
+
     PASSWORD_REQUIRED: 'Password is required',
     PASSWORD_MIN_LENGTH: 'Password must be at least 8 characters',
     PASSWORD_MAX_LENGTH: 'Password must be less than 128 characters',
     PASSWORD_COMPLEXITY: 'Password must contain uppercase, lowercase, number and special character',
-    
+
     FIRST_NAME_MAX_LENGTH: 'First name must be less than 100 characters',
     LAST_NAME_MAX_LENGTH: 'Last name must be less than 100 characters',
     BIO_MAX_LENGTH: 'Bio must be less than 500 characters',
-    
+
     PAGE_MIN: 'Page must be at least 1',
     LIMIT_MIN: 'Limit must be at least 1',
-    LIMIT_MAX: 'Limit must be less than 100',
-  },
+    LIMIT_MAX: 'Limit must be less than 100'
+  }
 } as const

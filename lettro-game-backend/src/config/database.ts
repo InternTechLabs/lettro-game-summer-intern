@@ -4,7 +4,7 @@ import { logger } from '@/config/logger'
 type LogLevel = 'query' | 'info' | 'warn' | 'error'
 // import type { TransactionClient, TransactionIsolationLevel } from '@prisma/client' // Not exported directly
 // Locally define QueryEvent since it's not exported by Prisma
-type QueryEvent = {
+interface QueryEvent {
   timestamp: Date
   query: string
   params: string
@@ -12,7 +12,7 @@ type QueryEvent = {
   target: string
 }
 // Locally define LogEvent since it's not exported by Prisma
-type LogEvent = {
+interface LogEvent {
   timestamp: Date
   message: string
   target: string

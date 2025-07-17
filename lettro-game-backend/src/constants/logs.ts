@@ -4,7 +4,7 @@ export const LOG_LEVELS = {
   info: 2,
   http: 3,
   debug: 4
-} as const;
+} as const
 
 export const LOG_COLORS = {
   error: 'red',
@@ -12,7 +12,7 @@ export const LOG_COLORS = {
   info: 'green',
   http: 'magenta',
   debug: 'white'
-} as const;
+} as const
 
 export const LOG_CONFIG = {
   maxFileSize: '20m',
@@ -21,7 +21,7 @@ export const LOG_CONFIG = {
   combinedMaxFiles: '30d',
   datePattern: 'YYYY-MM-DD',
   timestampFormat: 'YYYY-MM-DD HH:mm:ss:ms'
-} as const;
+} as const
 
 export const FILE_NAMES = {
   application: 'application-%DATE%.log',
@@ -29,4 +29,4 @@ export const FILE_NAMES = {
   combined: 'combined-%DATE%.log',
   exceptions: 'exceptions.log',
   rejections: 'rejections.log'
-} as const;
+} as const

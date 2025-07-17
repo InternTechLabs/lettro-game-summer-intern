@@ -1,14 +1,14 @@
 // Adds custom log helpers (like HTTP logs)
-import winston from 'winston';
-import type { 
-  RequestLogData, 
-  WebSocketLogData, 
-  DatabaseLogData, 
-  MorganStream 
-} from '@/types/logs';
+import type winston from 'winston'
+import type {
+  RequestLogData,
+  WebSocketLogData,
+  DatabaseLogData,
+  MorganStream
+} from '@/types/logs'
 
 export class LoggerExtensions {
-  constructor(private logger: winston.Logger) {}
+  constructor (private readonly logger: winston.Logger) {}
 
   logRequest = (req: any, res: any, responseTime?: number): void => {
     const logData: RequestLogData = {
@@ -20,14 +20,14 @@ export class LoggerExtensions {
       statusCode: res.statusCode,
       responseTime: responseTime != null ? `${responseTime}ms` : undefined,
       userId: req.user?.id ?? 'guest'
-    };
+    }
 
     if (typeof res.statusCode === 'number' && res.statusCode >= 400) {
-      this.logger.warn('HTTP Request', logData);
+      this.logger.warn('HTTP Request', logData)
     } else {
-      this.logger.info('HTTP Request', logData);
+      this.logger.info('HTTP Request', logData)
     }
-  };
+  }
 
   logWebSocket = (event: string, clientId: string, data?: any): void => {
     const logData: WebSocketLogData = {
@@ -35,10 +35,10 @@ export class LoggerExtensions {
       clientId,
       data: data ? JSON.stringify(data) : undefined,
       timestamp: new Date().toISOString()
-    };
+    }
 
-    this.logger.info('WebSocket Event', logData);
-  };
+    this.logger.info('WebSocket Event', logData)
+  }
 
   logDatabase = (
     operation: string,
@@ -49,28 +49,28 @@ export class LoggerExtensions {
     const logData: DatabaseLogData = {
       operation,
       table,
-      duration: typeof duration === 'number' && !isNaN(duration) 
-        ? `${duration}ms` 
+      duration: typeof duration === 'number' && !isNaN(duration)
+        ? `${duration}ms`
         : undefined,
       timestamp: new Date().toISOString()
-    };
+    }
 
     if (error instanceof Error) {
       this.logger.error('Database Error', {
         ...logData,
         error: error.message,
         stack: error.stack
-      });
+      })
     } else {
-      this.logger.debug('Database Operation', logData);
+      this.logger.debug('Database Operation', logData)
     }
-  };
+  }
 
-  getMorganStream(): MorganStream {
+  getMorganStream (): MorganStream {
     return {
       write: (message: string): void => {
-        this.logger.http(message.substring(0, message.lastIndexOf('\n')));
+        this.logger.http(message.substring(0, message.lastIndexOf('\n')))
       }
-    };
+    }
   }
 }

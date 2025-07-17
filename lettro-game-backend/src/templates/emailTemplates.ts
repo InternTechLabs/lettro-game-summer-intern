@@ -3,7 +3,7 @@ const baseStyles = `
   .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
   .content { padding: 30px 20px; }
   .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; background: #f9f9f9; }
-`;
+`
 
 export const emailTemplates = {
   verification: (url: string) => `

@@ -12,7 +12,7 @@ const server = createServer(app)
 // Setup WebSocket
 setupWebSocket(server)
 
-async function gracefulShutdown(signal: string) {
+async function gracefulShutdown (signal: string) {
   logger.info(`Received ${signal}, shutting down gracefully...`)
 
   server.close(async () => {
@@ -38,8 +38,8 @@ async function gracefulShutdown(signal: string) {
   }, 30000)
 }
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGTERM', async () => { await gracefulShutdown('SIGTERM') })
+process.on('SIGINT', async () => { await gracefulShutdown('SIGINT') })
 
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught Exception:', error)
@@ -52,7 +52,7 @@ process.on('unhandledRejection', (reason, promise) => {
 })
 
 logger.info('server')
-async function startServer() {
+async function startServer () {
   try {
     await redisClient.connect()
 
@@ -63,7 +63,7 @@ async function startServer() {
       logger.info(`🔗 WebSocket available at ws://localhost:${port}/ws`)
 
       if (env.NODE_ENV === 'development') {
-        logger.info(`📊 Database Studio: npx prisma studio`)
+        logger.info('📊 Database Studio: npx prisma studio')
         logger.info(`🔍 Health check: http://localhost:${port}/health`)
       }
     })

@@ -5,7 +5,7 @@ module.exports = {
   extends: ['standard-with-typescript'],
   parserOptions: {
     project: './tsconfig.json',
-    tsconfigRootDir: process.cwd(),
-    sourceType: 'module'
-  }
+    tsconfigRootDir: __dirname,
+    sourceType: 'module',
+  },
 };

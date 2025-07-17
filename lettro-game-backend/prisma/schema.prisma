@@ -7,63 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Player model - handles both registered and guest players
-
+// Player model - handles both re gistered and guest players
 model Player {
   id        String   @id @default(cuid())
   username  String   @unique @db.VarChar(50)
   email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  avatar    String?  @db.VarChar(500)
-  isActive  Boolean  @default(true)
-  isVerified Boolean @default(false)
-  isGuest      Boolean   @default(false)
-  isOnline     Boolean   @default(false)
-  lastSeen     DateTime  @default(now())
-  
-  // Profile fields
-  firstName String?  @db.VarChar(100)
-  lastName  String?  @db.VarChar(100)
-  bio       String?  @db.VarChar(500)
-  
-  // Game stats
-  totalScore     Int @default(0)
-  gamesPlayed    Int @default(0)
-  gamesWon       Int @default(0)
-  longestWord    String? @db.VarChar(50)
-  averageScore   Float @default(0)
-  
-  // Security fields
-  passwordResetToken   String?   @db.VarChar(255)
-  passwordResetExpires DateTime?
-  emailVerificationToken String? @db.VarChar(255)
-  lastLogin            DateTime?
-  loginAttempts        Int       @default(0)
-  lockUntil           DateTime?
-  
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  
-  @@map("players")
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-// Player model - handles both registered and guest players
-model Player {
-  id        String   @id @default(cuid())
-  username  String   @unique @db.VarChar(50)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
+  password  String   @db.VarChar(255)                                                
   avatar    String?  @db.VarChar(500)
   isActive  Boolean  @default(true)
   isVerified Boolean @default(false)
@@ -101,7 +50,6 @@ model Player {
   gameParticipations GameParticipant[]
   rounds         Round[]        @relation("RoundDrawer")
   guesses        Guess[]
-  messages       ChatMessage[]
   
   @@map("players")
 }
@@ -117,7 +65,6 @@ model Room {
   maxPlayers     Int      @default(6)
   isPrivate      Boolean  @default(false)
   requiresAuth   Boolean  @default(false)
-  password       String?  @db.VarChar(255)
   
   // Game settings
   maxRounds      Int      @default(3)
@@ -146,6 +93,7 @@ model Room {
   
   @@map("rooms")
 }
+
 // Room membership model
 model RoomMember {
   id       String @id @default(cuid())
@@ -205,10 +153,10 @@ model Game {
   room           Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
   participants   GameParticipant[]
   rounds         Round[]
-  chatMessages   ChatMessage[]
   
   @@map("games")
 }
+
 // Game participant model
 model GameParticipant {
   id       String @id @default(cuid())
@@ -296,41 +244,20 @@ model Guess {
   
   @@map("guesses")
 }
-
-// Chat message model
-model ChatMessage {
-  id       String @id @default(cuid())
-  gameId   String?
-  playerId String
-  
-  // Message content
-  message   String      @db.VarChar(500)
-  type      MessageType @default(CHAT)
-  
-  // Timestamps
-  createdAt DateTime    @default(now())
-  
-  // Relations
-  game   Game?  @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  
-  @@map("chat_messages")
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
 }
 
-// Word bank model for game words
-model Word {
-  id         String     @id @default(cuid())
-  word       String     @unique @db.VarChar(50)
-  category   String     @db.VarChar(50)
-  difficulty Difficulty @default(MEDIUM)
-  
-  // Word metadata
-  isActive   Boolean    @default(true)
-  popularity Int        @default(0) // How often this word is used
-  
-  // Timestamps
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  
-  @@map("words")
+enum RoomStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+}
+
+enum GameStatus {
+  WAITING
+  STARTED
+  ENDED
 }

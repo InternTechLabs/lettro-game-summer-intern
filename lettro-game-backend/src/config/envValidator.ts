@@ -1,6 +1,5 @@
-import { z } from 'zod';
-import { validateEnv as validateEnvFn } from '@/config/envValidator';
-
+import { z } from 'zod'
+import { validateEnv as validateEnvFn } from '@/config/envValidator'
 
 const envSchema = z.object({
   ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -38,10 +37,10 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().int().min(1).max(65535),
   SMTP_USER: z.string().min(1),
   SMTP_PASS: z.string().min(1),
-  SMTP_FROM: z.string().email(),
+  SMTP_FROM: z.string().email()
 }).passthrough()
 
-export function validateEnv() {
+export function validateEnv () {
   const parsed = envSchema.safeParse(process.env)
 
   if (!parsed.success) {
