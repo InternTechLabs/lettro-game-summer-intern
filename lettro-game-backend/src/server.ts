@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { app } from '@/app'
-
+import dotenv from 'dotenv'
 import { prisma } from '@/config/prisma'
 import { redisClient } from '@/config/redis'
 import { env } from '@/config/env'
@@ -8,11 +8,15 @@ import { logger } from '@/config/logger'
 import { setupWebSocket } from '@/ws/websocket'
 
 const server = createServer(app)
+dotenv.config({ path: '.env.development.local' })
+console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET)
+
+await redisClient.connect()
 
 // Setup WebSocket
 setupWebSocket(server)
 
-async function gracefulShutdown(signal: string) {
+async function gracefulShutdown (signal: string) {
   logger.info(`Received ${signal}, shutting down gracefully...`)
 
   server.close(async () => {
@@ -38,8 +42,8 @@ async function gracefulShutdown(signal: string) {
   }, 30000)
 }
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGTERM', async () => { await gracefulShutdown('SIGTERM') })
+process.on('SIGINT', async () => { await gracefulShutdown('SIGINT') })
 
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught Exception:', error)
@@ -52,19 +56,19 @@ process.on('unhandledRejection', (reason, promise) => {
 })
 
 logger.info('server')
-async function startServer() {
+async function startServer () {
   try {
     await redisClient.connect()
 
-    const port = env.PORT || 3000
-    server.listen(port, () => {
-      logger.info(`🚀 Server running on port ${port}`)
+    const PORT = process.env.PORT || 3000
+    server.listen(PORT, () => {
+      logger.info(`🚀 Server running on port ${PORT}`)
       logger.info(`📱 Environment: ${env.NODE_ENV}`)
-      logger.info(`🔗 WebSocket available at ws://localhost:${port}/ws`)
+      logger.info(`🔗 WebSocket available at ws://localhost:${PORT}/ws`)
 
       if (env.NODE_ENV === 'development') {
-        logger.info(`📊 Database Studio: npx prisma studio`)
-        logger.info(`🔍 Health check: http://localhost:${port}/health`)
+        logger.info('📊 Database Studio: npx prisma studio')
+        logger.info(`🔍 Health check: http://localhost:${PORT}/health`)
       }
     })
   } catch (error) {

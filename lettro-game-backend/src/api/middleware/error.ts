@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/comma-dangle */
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
 import { Prisma } from '@prisma/client'
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
+import Jwt  from 'jsonwebtoken'
 import { AppError, ValidationError, DatabaseError, TokenError, NotFoundError, ConflictError } from '@/utils/errorsUtils'
 import { HTTP_STATUS, MESSAGES, ERROR_CODES } from '@/constants'
 import { logger } from '@/config/logger'
@@ -19,7 +21,7 @@ interface ErrorResponse {
     stack?: string
   }
 }
-
+const { JsonWebTokenError, TokenExpiredError } = Jwt;
 export const errorHandler = (
   error: Error,
   req: Request,
@@ -38,7 +40,7 @@ export const errorHandler = (
       message: err.message,
       code: err.code,
     }))
-    
+
     appError = new ValidationError(
       'Validation failed',
       validationErrors
@@ -57,8 +59,8 @@ export const errorHandler = (
   } else {
     // Unknown errors
     appError = new AppError(
-      env.NODE_ENV === 'production' 
-        ? MESSAGES.ERROR.INTERNAL_SERVER_ERROR 
+      env.NODE_ENV === 'production'
+        ? MESSAGES.ERROR.INTERNAL_SERVER_ERROR
         : error.message,
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
       ERROR_CODES.INTERNAL_ERROR,
@@ -88,7 +90,7 @@ export const errorHandler = (
 
 export const notFoundHandler = (req: Request, res: Response): void => {
   const error = new NotFoundError(`Route ${req.originalUrl} not found`)
-  
+
   res.status(HTTP_STATUS.NOT_FOUND).json({
     success: false,
     error: {
@@ -109,50 +111,50 @@ export const asyncHandler = (fn: Function) => {
 }
 
 // Helper functions
-function handlePrismaError(error: Prisma.PrismaClientKnownRequestError): AppError {
+function handlePrismaError (error: Prisma.PrismaClientKnownRequestError): AppError {
   switch (error.code) {
     case 'P2002':
       // Unique constraint violation
       const field = (error.meta?.target as string[])?.join(', ') || 'field'
       return new ConflictError(`${field} already exists`)
-    
+
     case 'P2025':
       // Record not found
       return new NotFoundError('Record not found')
-    
+
     case 'P2003':
       // Foreign key constraint violation
       return new ValidationError('Invalid reference to related record')
-    
+
     case 'P2011':
       // Null constraint violation
       const nullField = error.meta?.column_name || 'field'
       return new ValidationError(`${nullField} is required`)
-    
+
     case 'P2012':
       // Missing required value
       const missingField = error.meta?.column_name || 'field'
       return new ValidationError(`${missingField} is missing`)
-    
+
     case 'P2000':
       // Value too long
       const longField = error.meta?.column_name || 'field'
       return new ValidationError(`${longField} value is too long`)
-    
+
     case 'P2001':
       // Record does not exist
       return new NotFoundError('Record does not exist')
-    
+
     case 'P2004':
       // Constraint failed
       return new ValidationError('Database constraint failed')
-    
+
     default:
       return new DatabaseError(`Database error: ${error.message}`)
   }
 }
 
-function logError(error: AppError, req: Request): void {
+function logError (error: AppError, req: Request): void {
   const errorLog = {
     message: error.message,
     code: error.code,

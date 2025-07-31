@@ -45,12 +45,12 @@ model Player {
   updatedAt DateTime @updatedAt
 
   // Relations
-  hostedRooms     Room[]         @relation("RoomHost")
-  roomMemberships RoomMember[]
+  hostedRooms        Room[]              @relation("RoomHost")
+  roomMemberships    RoomMember[]
   gameParticipations GameParticipant[]
-  rounds         Round[]        @relation("RoundDrawer")
-  guesses        Guess[]
-  messages       ChatMessage[]
+  rounds             Round[]             @relation("RoundDrawer")
+  guesses            Guess[]
+  chatMessages       ChatMessage[]       // Added missing relation
   
   @@map("players")
 }
@@ -66,7 +66,7 @@ model Room {
   maxPlayers     Int      @default(6)
   isPrivate      Boolean  @default(false)
   requiresAuth   Boolean  @default(false)
-  password       String?  @db.VarChar(255)
+  password       String?  @db.VarChar(255)  // Added missing password field
   
   // Game settings
   maxRounds      Int      @default(3)
@@ -95,6 +95,7 @@ model Room {
   
   @@map("rooms")
 }
+
 // Room membership model
 model RoomMember {
   id       String @id @default(cuid())
@@ -151,13 +152,14 @@ model Game {
   updatedAt      DateTime   @updatedAt
   
   // Relations
-  room           Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  room           Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
   participants   GameParticipant[]
   rounds         Round[]
-  chatMessages   ChatMessage[]
+  chatMessages   ChatMessage[]   // Added missing relation
   
   @@map("games")
 }
+
 // Game participant model
 model GameParticipant {
   id       String @id @default(cuid())
@@ -272,6 +274,7 @@ model Word {
   word       String     @unique @db.VarChar(50)
   category   String     @db.VarChar(50)
   difficulty Difficulty @default(MEDIUM)
+
   
   // Word metadata
   isActive   Boolean    @default(true)
@@ -284,32 +287,34 @@ model Word {
   @@map("words")
 }
 
+// Enums 
 enum RoomStatus {
-  WAITING 
-  PLAYING 
-  PAUSED 
-  FINISHED 
-  CLOSED 
+  WAITING
+  PLAYING
+  PAUSED
+  FINISHED
+  CLOSED
 }
+
 enum GameStatus {
-  WAITING 
-  STARTING 
-  PLAYING 
-  PAUSED 
-  FINISHED 
-  CANCELLED 
+  WAITING
+  STARTING
+  PLAYING
+  PAUSED
+  FINISHED
+  CANCELLED
 }
 
 enum Difficulty {
-  EASY 
-  MEDIUM 
-  HARD 
+  EASY
+  MEDIUM
+  HARD
 }
 
 enum MessageType {
-  CHAT 
-  SYSTEM 
-  GUESS 
-  CORRECT_GUESS 
-  GAME_EVENT 
+  CHAT
+  SYSTEM
+  GUESS
+  CORRECT_GUESS
+  GAME_EVENT
 }

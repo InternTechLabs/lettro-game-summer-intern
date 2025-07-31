@@ -3,7 +3,7 @@ import { env } from './env'
 import { logger } from './logger'
 
 export const prisma = new PrismaClient({
-  log: env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+  log: env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error']
 })
 
 prisma

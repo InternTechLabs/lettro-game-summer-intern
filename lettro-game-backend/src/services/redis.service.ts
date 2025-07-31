@@ -10,7 +10,7 @@ export class RedisService {
   private readonly PLAYER_CACHE_PREFIX = 'player:'
 
   // Refresh Token Management
-  async setRefreshToken(playerId: string, token: string, ttl: number = 7 * 24 * 60 * 60): Promise<void> {
+  async setRefreshToken (playerId: string, token: string, ttl: number = 7 * 24 * 60 * 60): Promise<void> {
     try {
       const key = `${this.REFRESH_TOKEN_PREFIX}${playerId}`
       await redisClient.setEx(key, ttl, token)
@@ -20,7 +20,7 @@ export class RedisService {
     }
   }
 
-  async getRefreshToken(playerId: string): Promise<string | null> {
+  async getRefreshToken (playerId: string): Promise<string | null> {
     try {
       const key = `${this.REFRESH_TOKEN_PREFIX}${playerId}`
       return await redisClient.get(key)
@@ -30,7 +30,7 @@ export class RedisService {
     }
   }
 
-  async deleteRefreshToken(playerId: string): Promise<void> {
+  async deleteRefreshToken (playerId: string): Promise<void> {
     try {
       const key = `${this.REFRESH_TOKEN_PREFIX}${playerId}`
       await redisClient.del(key)
@@ -41,24 +41,24 @@ export class RedisService {
   }
 
   // Rate Limiting
-  async incrementRateLimit(
-    identifier: string, 
-    action: string, 
+  async incrementRateLimit (
+    identifier: string,
+    action: string,
     windowSeconds: number = 60
-  ): Promise<{ count: number; ttl: number }> {
+  ): Promise<{ count: number, ttl: number }> {
     try {
       const key = `${this.RATE_LIMIT_PREFIX}${action}:${identifier}`
       const pipeline = redisClient.multi()
-      
+
       pipeline.incr(key)
       pipeline.expire(key, windowSeconds)
       pipeline.ttl(key)
-      
+
       const results = await pipeline.exec()
       // Each result is [error, value], so destructure accordingly
       const count = (results && Array.isArray(results[0]) ? results[0][1] as number : 0) || 0
       const ttl = (results && Array.isArray(results[2]) ? results[2][1] as number : 0) || 0
-      
+
       return { count, ttl }
     } catch (error) {
       logger.error('Redis incrementRateLimit error:', error)
@@ -66,20 +66,20 @@ export class RedisService {
     }
   }
 
-  async getRateLimit(identifier: string, action: string): Promise<{ count: number; ttl: number }> {
+  async getRateLimit (identifier: string, action: string): Promise<{ count: number, ttl: number }> {
     try {
       const key = `${this.RATE_LIMIT_PREFIX}${action}:${identifier}`
       const pipeline = redisClient.multi()
-      
+
       pipeline.get(key)
       pipeline.ttl(key)
-      
+
       const results = await pipeline.exec()
       const countRaw = Array.isArray(results?.[0]) ? results[0][1] : null
       const ttlRaw = Array.isArray(results?.[1]) ? results[1][1] : null
       const count = parseInt(countRaw ?? '0', 10)
       const ttl = typeof ttlRaw === 'number' ? ttlRaw : 0
-      
+
       return { count, ttl }
     } catch (error) {
       logger.error('Redis getRateLimit error:', error)
@@ -87,7 +87,7 @@ export class RedisService {
     }
   }
 
-  async resetRateLimit(identifier: string, action: string): Promise<void> {
+  async resetRateLimit (identifier: string, action: string): Promise<void> {
     try {
       const key = `${this.RATE_LIMIT_PREFIX}${action}:${identifier}`
       await redisClient.del(key)
@@ -98,7 +98,7 @@ export class RedisService {
   }
 
   // Session Management
-  async setSession(sessionId: string, data: any, ttl: number = 24 * 60 * 60): Promise<void> {
+  async setSession (sessionId: string, data: any, ttl: number = 24 * 60 * 60): Promise<void> {
     try {
       const key = `${this.SESSION_PREFIX}${sessionId}`
       await redisClient.setEx(key, ttl, JSON.stringify(data))
@@ -108,7 +108,7 @@ export class RedisService {
     }
   }
 
-  async getSession(sessionId: string): Promise<any | null> {
+  async getSession (sessionId: string): Promise<any | null> {
     try {
       const key = `${this.SESSION_PREFIX}${sessionId}`
       const data = await redisClient.get(key)
@@ -119,7 +119,7 @@ export class RedisService {
     }
   }
 
-  async deleteSession(sessionId: string): Promise<void> {
+  async deleteSession (sessionId: string): Promise<void> {
     try {
       const key = `${this.SESSION_PREFIX}${sessionId}`
       await redisClient.del(key)
@@ -130,7 +130,7 @@ export class RedisService {
   }
 
   // Player Caching
-  async cachePlayer(playerId: string, playerData: any, ttl: number = 15 * 60): Promise<void> {
+  async cachePlayer (playerId: string, playerData: any, ttl: number = 15 * 60): Promise<void> {
     try {
       const key = `${this.PLAYER_CACHE_PREFIX}${playerId}`
       await redisClient.setEx(key, ttl, JSON.stringify(playerData))
@@ -140,7 +140,7 @@ export class RedisService {
     }
   }
 
-  async getCachedPlayer(playerId: string): Promise<any | null> {
+  async getCachedPlayer (playerId: string): Promise<any | null> {
     try {
       const key = `${this.PLAYER_CACHE_PREFIX}${playerId}`
       const data = await redisClient.get(key)
@@ -151,7 +151,7 @@ export class RedisService {
     }
   }
 
-  async invalidatePlayerCache(playerId: string): Promise<void> {
+  async invalidatePlayerCache (playerId: string): Promise<void> {
     try {
       const key = `${this.PLAYER_CACHE_PREFIX}${playerId}`
       await redisClient.del(key)
@@ -162,7 +162,7 @@ export class RedisService {
   }
 
   // Game Session Management
-  async setGameSession(gameId: string, gameData: any, ttl: number = 60 * 60): Promise<void> {
+  async setGameSession (gameId: string, gameData: any, ttl: number = 60 * 60): Promise<void> {
     try {
       const key = `${this.GAME_PREFIX}${gameId}`
       await redisClient.setEx(key, ttl, JSON.stringify(gameData))
@@ -172,7 +172,7 @@ export class RedisService {
     }
   }
 
-  async getGameSession(gameId: string): Promise<any | null> {
+  async getGameSession (gameId: string): Promise<any | null> {
     try {
       const key = `${this.GAME_PREFIX}${gameId}`
       const data = await redisClient.get(key)
@@ -183,7 +183,7 @@ export class RedisService {
     }
   }
 
-  async deleteGameSession(gameId: string): Promise<void> {
+  async deleteGameSession (gameId: string): Promise<void> {
     try {
       const key = `${this.GAME_PREFIX}${gameId}`
       await redisClient.del(key)
@@ -194,7 +194,7 @@ export class RedisService {
   }
 
   // Generic Cache Operations
-  async set(key: string, value: any, ttl?: number): Promise<void> {
+  async set (key: string, value: any, ttl?: number): Promise<void> {
     try {
       const serializedValue = JSON.stringify(value)
       if (ttl) {
@@ -208,7 +208,7 @@ export class RedisService {
     }
   }
 
-  async get(key: string): Promise<any | null> {
+  async get (key: string): Promise<any | null> {
     try {
       const data = await redisClient.get(key)
       return data ? JSON.parse(data) : null
@@ -218,7 +218,7 @@ export class RedisService {
     }
   }
 
-  async del(key: string): Promise<void> {
+  async del (key: string): Promise<void> {
     try {
       await redisClient.del(key)
     } catch (error) {
@@ -227,7 +227,7 @@ export class RedisService {
     }
   }
 
-  async exists(key: string): Promise<boolean> {
+  async exists (key: string): Promise<boolean> {
     try {
       const result = await redisClient.exists(key)
       return result === 1
@@ -237,7 +237,7 @@ export class RedisService {
     }
   }
 
-  async expire(key: string, ttl: number): Promise<void> {
+  async expire (key: string, ttl: number): Promise<void> {
     try {
       await redisClient.expire(key, ttl)
     } catch (error) {
@@ -247,7 +247,7 @@ export class RedisService {
   }
 
   // Pub/Sub for real-time features
-  async publish(channel: string, message: any): Promise<void> {
+  async publish (channel: string, message: any): Promise<void> {
     try {
       await redisClient.publish(channel, JSON.stringify(message))
     } catch (error) {
@@ -256,11 +256,11 @@ export class RedisService {
     }
   }
 
-  async subscribe(channel: string, callback: (message: any) => void): Promise<void> {
+  async subscribe (channel: string, callback: (message: any) => void): Promise<void> {
     try {
       const subscriber = redisClient.duplicate()
       await subscriber.connect()
-      
+
       await subscriber.subscribe(channel, (message) => {
         try {
           const parsedMessage = JSON.parse(message)
@@ -277,7 +277,7 @@ export class RedisService {
   }
 
   // Bulk operations
-  async mget(keys: string[]): Promise<(any | null)[]> {
+  async mget (keys: string[]): Promise<Array<any | null>> {
     try {
       const values = await redisClient.mGet(keys)
       return values.map(value => value ? JSON.parse(value) : null)
@@ -287,10 +287,10 @@ export class RedisService {
     }
   }
 
-  async mset(keyValuePairs: Record<string, any>, ttl?: number): Promise<void> {
+  async mset (keyValuePairs: Record<string, any>, ttl?: number): Promise<void> {
     try {
       const pipeline = redisClient.multi()
-      
+
       for (const [key, value] of Object.entries(keyValuePairs)) {
         const serializedValue = JSON.stringify(value)
         if (ttl) {
@@ -299,7 +299,7 @@ export class RedisService {
           pipeline.set(key, serializedValue)
         }
       }
-      
+
       await pipeline.exec()
     } catch (error) {
       logger.error('Redis mset error:', error)
@@ -308,11 +308,11 @@ export class RedisService {
   }
 
   // Cleanup operations
-  async deletePattern(pattern: string): Promise<number> {
+  async deletePattern (pattern: string): Promise<number> {
     try {
       const keys = await redisClient.keys(pattern)
       if (keys.length === 0) return 0
-      
+
       return await redisClient.del(keys)
     } catch (error) {
       logger.error('Redis deletePattern error:', error)
@@ -320,7 +320,7 @@ export class RedisService {
     }
   }
 
-  async flushdb(): Promise<void> {
+  async flushdb (): Promise<void> {
     try {
       await redisClient.flushDb()
     } catch (error) {

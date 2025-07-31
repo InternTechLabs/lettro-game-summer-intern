@@ -1,33 +1,33 @@
 // src/services/player.service.ts
-import { Player } from '@prisma/client'
+import { type Player } from '@prisma/client'
 import { PlayerRepository } from '@/repositories/player.repository'
 import { SecurityUtils } from '@/utils/securityUtils'
 import { RedisService } from '@/services/redis.service'
 import { EmailService } from '@/services/email.service'
-import { 
-  CreatePlayerDto, 
-  LoginPlayerDto, 
-  UpdatePlayerDto, 
-  ChangePasswordDto,
-  GetPlayersQueryDto,
-  PublicPlayerDto,
-  PrivatePlayerDto
+import {
+  type CreatePlayerDto,
+  type LoginPlayerDto,
+  type UpdatePlayerDto,
+  type ChangePasswordDto,
+  type GetPlayersQueryDto,
+  type PublicPlayerDto,
+  type PrivatePlayerDto
 } from '@/dto/player.dto'
 import { AppError } from '@/utils/errorsUtils'
 import { logger } from '@/config/logger'
 
 export class PlayerService {
-  private playerRepository: PlayerRepository
-  private redisService: RedisService
-  private emailService: EmailService
+  private readonly playerRepository: PlayerRepository
+  private readonly redisService: RedisService
+  private readonly emailService: EmailService
 
-  constructor() {
+  constructor () {
     this.playerRepository = new PlayerRepository()
     this.redisService = new RedisService()
     this.emailService = new EmailService()
   }
 
-  async register(data: CreatePlayerDto): Promise<{
+  async register (data: CreatePlayerDto): Promise<{
     player: PublicPlayerDto
     accessToken: string
     refreshToken: string
@@ -64,7 +64,7 @@ export class PlayerService {
         password: hashedPassword,
         firstName: data.firstName,
         lastName: data.lastName,
-        emailVerificationToken,
+        emailVerificationToken
       })
 
       // Send verification email
@@ -74,7 +74,7 @@ export class PlayerService {
       const accessToken = SecurityUtils.generateAccessToken({
         id: player.id,
         username: player.username,
-        email: player.email,
+        email: player.email
       })
 
       const refreshToken = SecurityUtils.generateRefreshToken({ id: player.id })
@@ -87,7 +87,7 @@ export class PlayerService {
       return {
         player: this.toPublicPlayer(player),
         accessToken,
-        refreshToken,
+        refreshToken
       }
     } catch (error) {
       logger.error('Registration error:', error)
@@ -95,7 +95,7 @@ export class PlayerService {
     }
   }
 
-  async login(data: LoginPlayerDto, clientIP: string): Promise<{
+  async login (data: LoginPlayerDto, clientIP: string): Promise<{
     player: PrivatePlayerDto
     accessToken: string
     refreshToken: string
@@ -141,7 +141,7 @@ export class PlayerService {
       const accessToken = SecurityUtils.generateAccessToken({
         id: player.id,
         username: player.username,
-        email: player.email,
+        email: player.email
       })
 
       const refreshToken = SecurityUtils.generateRefreshToken({ id: player.id })
@@ -155,7 +155,7 @@ export class PlayerService {
       return {
         player: this.toPrivatePlayer(player),
         accessToken,
-        refreshToken,
+        refreshToken
       }
     } catch (error) {
       logger.error('Login error:', error)
@@ -163,7 +163,7 @@ export class PlayerService {
     }
   }
 
-  async logout(playerId: string): Promise<void> {
+  async logout (playerId: string): Promise<void> {
     try {
       // Remove refresh token from Redis
       await this.redisService.deleteRefreshToken(playerId)
@@ -174,14 +174,14 @@ export class PlayerService {
     }
   }
 
-  async refreshToken(refreshToken: string): Promise<{
+  async refreshToken (refreshToken: string): Promise<{
     accessToken: string
     refreshToken: string
   }> {
     try {
       // Verify refresh token
       const decoded = SecurityUtils.verifyRefreshToken(refreshToken)
-      
+
       // Check if token exists in Redis
       const storedToken = await this.redisService.getRefreshToken(decoded.id)
       if (!storedToken || storedToken !== refreshToken) {
@@ -190,7 +190,7 @@ export class PlayerService {
 
       // Get player
       const player = await this.playerRepository.findById(decoded.id)
-      if (!player || !player.isActive) {
+      if (!player?.isActive) {
         throw new AppError('Player not found or inactive', 401)
       }
 
@@ -198,7 +198,7 @@ export class PlayerService {
       const newAccessToken = SecurityUtils.generateAccessToken({
         id: player.id,
         username: player.username,
-        email: player.email,
+        email: player.email
       })
 
       const newRefreshToken = SecurityUtils.generateRefreshToken({ id: player.id })
@@ -208,7 +208,7 @@ export class PlayerService {
 
       return {
         accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
+        refreshToken: newRefreshToken
       }
     } catch (error) {
       logger.error('Token refresh error:', error)
@@ -216,7 +216,7 @@ export class PlayerService {
     }
   }
 
-  async getPlayerById(id: string, includePrivate: boolean = false): Promise<PublicPlayerDto | PrivatePlayerDto> {
+  async getPlayerById (id: string, includePrivate: boolean = false): Promise<PublicPlayerDto | PrivatePlayerDto> {
     try {
       const player = await this.playerRepository.findById(id)
       if (!player) {
@@ -230,7 +230,7 @@ export class PlayerService {
     }
   }
 
-  async getPlayerByUsername(username: string): Promise<PublicPlayerDto> {
+  async getPlayerByUsername (username: string): Promise<PublicPlayerDto> {
     try {
       const player = await this.playerRepository.findByUsername(username)
       if (!player) {
@@ -244,7 +244,7 @@ export class PlayerService {
     }
   }
 
-  async updatePlayer(id: string, data: UpdatePlayerDto): Promise<PrivatePlayerDto> {
+  async updatePlayer (id: string, data: UpdatePlayerDto): Promise<PrivatePlayerDto> {
     try {
       // Check if username is being updated and if it exists
       if (data.username) {
@@ -265,7 +265,7 @@ export class PlayerService {
 
       const updatedPlayer = await this.playerRepository.update(id, {
         ...data,
-        ...(data.email && { isVerified: false }), // Reset verification if email changed
+        ...(data.email && { isVerified: false }) // Reset verification if email changed
       })
 
       // Send new verification email if email was changed
@@ -283,7 +283,7 @@ export class PlayerService {
     }
   }
 
-  async changePassword(id: string, data: ChangePasswordDto): Promise<void> {
+  async changePassword (id: string, data: ChangePasswordDto): Promise<void> {
     try {
       const player = await this.playerRepository.findById(id)
       if (!player) {
@@ -321,7 +321,7 @@ export class PlayerService {
     }
   }
 
-  async forgotPassword(email: string): Promise<void> {
+  async forgotPassword (email: string): Promise<void> {
     try {
       const player = await this.playerRepository.findByEmail(email)
       if (!player) {
@@ -346,7 +346,7 @@ export class PlayerService {
     }
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
+  async resetPassword (token: string, newPassword: string): Promise<void> {
     try {
       const player = await this.playerRepository.findByPasswordResetToken(token)
       if (!player) {
@@ -375,7 +375,7 @@ export class PlayerService {
     }
   }
 
-  async verifyEmail(token: string): Promise<void> {
+  async verifyEmail (token: string): Promise<void> {
     try {
       const player = await this.playerRepository.findByEmailVerificationToken(token)
       if (!player) {
@@ -391,7 +391,7 @@ export class PlayerService {
     }
   }
 
-  async resendVerificationEmail(playerId: string): Promise<void> {
+  async resendVerificationEmail (playerId: string): Promise<void> {
     try {
       const player = await this.playerRepository.findById(playerId)
       if (!player) {
@@ -416,7 +416,7 @@ export class PlayerService {
     }
   }
 
-  async getPlayers(query: GetPlayersQueryDto): Promise<{
+  async getPlayers (query: GetPlayersQueryDto): Promise<{
     players: PublicPlayerDto[]
     pagination: {
       page: number
@@ -434,8 +434,8 @@ export class PlayerService {
           page: query.page,
           limit: query.limit,
           total: result.total,
-          totalPages: result.totalPages,
-        },
+          totalPages: result.totalPages
+        }
       }
     } catch (error) {
       logger.error('Get players error:', error)
@@ -443,7 +443,7 @@ export class PlayerService {
     }
   }
 
-  async getLeaderboard(limit: number): Promise<PublicPlayerDto[]> {
+  async getLeaderboard (limit: number): Promise<PublicPlayerDto[]> {
     try {
       const players = await this.playerRepository.getLeaderboard(limit)
       return players.map(player => this.toPublicPlayer(player))
@@ -453,7 +453,7 @@ export class PlayerService {
     }
   }
 
-  async deleteAccount(id: string, password: string): Promise<void> {
+  async deleteAccount (id: string, password: string): Promise<void> {
     try {
       const player = await this.playerRepository.findById(id)
       if (!player) {
@@ -480,7 +480,7 @@ export class PlayerService {
   }
 
   // Helper methods to transform Player to DTOs
-  private toPublicPlayer(player: Player): PublicPlayerDto {
+  private toPublicPlayer (player: Player): PublicPlayerDto {
     return {
       id: player.id,
       username: player.username,
@@ -493,18 +493,18 @@ export class PlayerService {
       gamesWon: player.gamesWon,
       longestWord: player.longestWord,
       averageScore: player.averageScore,
-      createdAt: player.createdAt,
+      createdAt: player.createdAt
     }
   }
 
-  private toPrivatePlayer(player: Player): PrivatePlayerDto {
+  private toPrivatePlayer (player: Player): PrivatePlayerDto {
     return {
       ...this.toPublicPlayer(player),
       email: player.email,
       isActive: player.isActive,
       isVerified: player.isVerified,
       lastLogin: player.lastLogin,
-      updatedAt: player.updatedAt,
+      updatedAt: player.updatedAt
     }
   }
 }

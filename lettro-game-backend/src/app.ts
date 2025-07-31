@@ -1,7 +1,12 @@
+/* eslint-disable @typescript-eslint/comma-dangle */
 import express from 'express'
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import cors from 'cors'
+import playerRoutes from './routes/player.route';
+import dotenv from 'dotenv'
+
 
 import { env } from '@/config/env'
 import { morganStream } from '@/config/logger'
@@ -9,10 +14,13 @@ import { RedisStore } from '@/config/redis'
 import { apiRateLimiter } from '@/config/rateLimiter'
 import { helmetMiddleware, corsMiddleware, hppMiddleware } from '@/config/security'
 
+
 import morgan from 'morgan'
-// import { errorHandler, notFoundHandler } from './middleware/error'
+
+dotenv.config({path: '.env.development.local' })
 
 const app = express()
+
 // Security middlewares
 app.use(helmetMiddleware)
 app.use(hppMiddleware)
@@ -45,11 +53,19 @@ app.use(
       sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
     },
   }),
-)
+);
+
+// Health check route (to confirm server is alive)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Player API routes
+app.use('/players', playerRoutes);
 
 // Optional: health check endpoint, error handlers, etc.
 // app.get('/health', ...)
 // app.use(notFoundHandler)
 // app.use(errorHandler)
 
-export { app }
+export { app };

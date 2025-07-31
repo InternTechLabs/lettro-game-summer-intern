@@ -30,5 +30,5 @@ export const ERROR_CODES = {
 
   // External Services
   EMAIL_SERVICE_ERROR: 'EMAIL_SERVICE_ERROR',
-  REDIS_ERROR: 'REDIS_ERROR',
+  REDIS_ERROR: 'REDIS_ERROR'
 } as const
