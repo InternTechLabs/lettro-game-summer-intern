@@ -161,10 +161,10 @@ export class PlayerController {
 
   // POST /api/players/change-password
   changePassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const playerId = req.user!.id;
+    const authenticatedPlayer = SecurityUtils.getUserFromAccessToken(req);
     const validatedData = ChangePasswordSchema.parse(req.body);
 
-    await this.playerService.changePassword(playerId, validatedData);
+    await this.playerService.changePassword(authenticatedPlayer.id, validatedData);
 
     // Clear all refresh tokens to force re-login on all devices
     res.clearCookie('refreshToken', {
