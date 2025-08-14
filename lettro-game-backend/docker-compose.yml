@@ -5,7 +5,7 @@ services:
       target: ${BUILD_TARGET:-development}
     container_name: lettro-${ENV:-dev}
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - '${APP_PORT:-3000}:3000'
     volumes:
       # Only mount volumes in development
       - ${VOLUME_MOUNT:-./:/lettro-game}
@@ -25,14 +25,14 @@ services:
     image: postgres:15-alpine
     container_name: lettro-postgres-${ENV:-dev}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_${ENV:-dev}_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - ./config/.env.${ENV:-development}.local
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lettro} -d ${POSTGRES_DB:-lettro_dev}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-lettro} -d ${POSTGRES_DB:-lettro_dev}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,14 +44,14 @@ services:
     image: redis:7-alpine
     container_name: lettro-redis-${ENV:-dev}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_${ENV:-dev}_data:/data
     command: redis-server ${REDIS_CONFIG:-}
     env_file:
       - ./config/.env.${ENV:-development}.local
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,9 +61,11 @@ services:
 
 volumes:
   postgres_development_data:
+  postgres_dev_data:
   postgres_staging_data:
   postgres_production_data:
   redis_development_data:
+  redis_dev_data:
   redis_staging_data:
   redis_production_data:
 

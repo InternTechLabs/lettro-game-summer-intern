@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/comma-dangle */
 import express from 'express'
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
@@ -8,6 +9,7 @@ import { morganStream } from '@/config/logger'
 import { RedisStore } from '@/config/redis'
 import { apiRateLimiter } from '@/config/rateLimiter'
 import { helmetMiddleware, corsMiddleware, hppMiddleware } from '@/config/security'
+import playerRoutes from '@/routes/player.routes'
 
 import morgan from 'morgan'
 // import { errorHandler, notFoundHandler } from './middleware/error'
@@ -51,5 +53,6 @@ app.use(
 // app.get('/health', ...)
 // app.use(notFoundHandler)
 // app.use(errorHandler)
+app.use('/api/players', playerRoutes)
 
 export { app }

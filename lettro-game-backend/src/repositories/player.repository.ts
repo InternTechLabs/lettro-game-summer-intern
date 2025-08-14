@@ -1,61 +1,61 @@
-import { Prisma, Player } from '@prisma/client'
+import { type Prisma, type Player } from '@prisma/client'
 import { prisma } from '@/config/prisma'
-import { GetPlayersQueryDto } from '@/dto/player.dto'
+import { type GetPlayersQueryDto } from '@/dto/player.dto'
 
 export class PlayerRepository {
-  async create(data: Prisma.PlayerCreateInput): Promise<Player> {
+  async create (data: Prisma.PlayerCreateInput): Promise<Player> {
     return await prisma.player.create({
-      data,
+      data
     })
   }
 
-  async findById(id: string): Promise<Player | null> {
+  async findById (id: string): Promise<Player | null> {
     return await prisma.player.findUnique({
-      where: { id },
+      where: { id }
     })
   }
 
-  async findByEmail(email: string): Promise<Player | null> {
+  async findByEmail (email: string): Promise<Player | null> {
     return await prisma.player.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: email.toLowerCase() }
     })
   }
 
-  async findByUsername(username: string): Promise<Player | null> {
+  async findByUsername (username: string): Promise<Player | null> {
     return await prisma.player.findUnique({
-      where: { username },
+      where: { username }
     })
   }
 
-  async findByEmailOrUsername(identifier: string): Promise<Player | null> {
+  async findByEmailOrUsername (identifier: string): Promise<Player | null> {
     return await prisma.player.findFirst({
       where: {
         OR: [
           { email: identifier.toLowerCase() },
-          { username: identifier },
-        ],
-      },
+          { username: identifier }
+        ]
+      }
     })
   }
 
-  async findByEmailVerificationToken(token: string): Promise<Player | null> {
+  async findByEmailVerificationToken (token: string): Promise<Player | null> {
     return await prisma.player.findFirst({
-      where: { emailVerificationToken: token },
+      where: { emailVerificationToken: token }
     })
   }
 
-  async findByPasswordResetToken(token: string): Promise<Player | null> {
+  async findByPasswordResetToken (token: string): Promise<Player | null> {
     return await prisma.player.findFirst({
       where: {
         passwordResetToken: token,
         passwordResetExpires: {
-          gt: new Date(),
-        },
-      },
+          gt: new Date()
+        }
+      }
     })
   }
 
-  async findMany(query: GetPlayersQueryDto): Promise<{
+  async findMany (query: GetPlayersQueryDto): Promise<{
     players: Player[]
     total: number
     totalPages: number
@@ -70,13 +70,13 @@ export class PlayerRepository {
           { username: { contains: search, mode: 'insensitive' } },
           { firstName: { contains: search, mode: 'insensitive' } },
           { lastName: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
+          { email: { contains: search, mode: 'insensitive' } }
+        ]
+      })
     }
 
     const orderBy: Prisma.PlayerOrderByWithRelationInput = {
-      [sortBy]: sortOrder,
+      [sortBy]: sortOrder
     }
 
     const [players, total] = await Promise.all([
@@ -84,112 +84,112 @@ export class PlayerRepository {
         where,
         orderBy,
         skip,
-        take: limit,
+        take: limit
       }),
-      prisma.player.count({ where }),
+      prisma.player.count({ where })
     ])
 
     return {
       players,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit)
     }
   }
 
-  async update(id: string, data: Prisma.PlayerUpdateInput): Promise<Player> {
+  async update (id: string, data: Prisma.PlayerUpdateInput): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         ...data,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async updatePassword(id: string, hashedPassword: string): Promise<Player> {
+  async updatePassword (id: string, hashedPassword: string): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         password: hashedPassword,
         passwordResetToken: null,
         passwordResetExpires: null,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async updateLoginAttempts(id: string, attempts: number, lockUntil?: Date): Promise<Player> {
+  async updateLoginAttempts (id: string, attempts: number, lockUntil?: Date): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         loginAttempts: attempts,
         lockUntil,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async updateLastLogin(id: string): Promise<Player> {
+  async updateLastLogin (id: string): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         lastLogin: new Date(),
         loginAttempts: 0,
         lockUntil: null,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async verifyEmail(id: string): Promise<Player> {
+  async verifyEmail (id: string): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         isVerified: true,
         emailVerificationToken: null,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async setPasswordResetToken(id: string, token: string, expires: Date): Promise<Player> {
+  async setPasswordResetToken (id: string, token: string, expires: Date): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         passwordResetToken: token,
         passwordResetExpires: expires,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async setEmailVerificationToken(id: string, token: string): Promise<Player> {
+  async setEmailVerificationToken (id: string, token: string): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         emailVerificationToken: token,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async softDelete(id: string): Promise<Player> {
+  async softDelete (id: string): Promise<Player> {
     return await prisma.player.update({
       where: { id },
       data: {
         isActive: false,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async hardDelete(id: string): Promise<Player> {
+  async hardDelete (id: string): Promise<Player> {
     return await prisma.player.delete({
-      where: { id },
+      where: { id }
     })
   }
 
-  async updateGameStats(
+  async updateGameStats (
     id: string,
     stats: {
       totalScore?: number
@@ -203,39 +203,39 @@ export class PlayerRepository {
       where: { id },
       data: {
         ...stats,
-        updatedAt: new Date(),
-      },
+        updatedAt: new Date()
+      }
     })
   }
 
-  async getLeaderboard(limit: number = 10): Promise<Player[]> {
+  async getLeaderboard (limit: number = 10): Promise<Player[]> {
     return await prisma.player.findMany({
       where: { isActive: true },
       orderBy: [
         { totalScore: 'desc' },
         { averageScore: 'desc' },
-        { gamesWon: 'desc' },
+        { gamesWon: 'desc' }
       ],
-      take: limit,
+      take: limit
     })
   }
 
-  async checkUsernameExists(username: string, excludeId?: string): Promise<boolean> {
+  async checkUsernameExists (username: string, excludeId?: string): Promise<boolean> {
     const count = await prisma.player.count({
       where: {
         username,
-        ...(excludeId && { id: { not: excludeId } }),
-      },
+        ...(excludeId && { id: { not: excludeId } })
+      }
     })
     return count > 0
   }
 
-  async checkEmailExists(email: string, excludeId?: string): Promise<boolean> {
+  async checkEmailExists (email: string, excludeId?: string): Promise<boolean> {
     const count = await prisma.player.count({
       where: {
         email: email.toLowerCase(),
-        ...(excludeId && { id: { not: excludeId } }),
-      },
+        ...(excludeId && { id: { not: excludeId } })
+      }
     })
     return count > 0
   }

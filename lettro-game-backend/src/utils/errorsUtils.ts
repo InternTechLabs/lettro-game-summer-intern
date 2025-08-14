@@ -7,7 +7,7 @@ export class AppError extends Error {
   public readonly timestamp: string
   public readonly details?: any
 
-  constructor(
+  constructor (
     message: string,
     statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
     code: string = ERROR_CODES.INTERNAL_ERROR,
@@ -15,7 +15,7 @@ export class AppError extends Error {
     details?: any
   ) {
     super(message)
-    
+
     this.name = this.constructor.name
     this.statusCode = statusCode
     this.code = code
@@ -28,7 +28,7 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor (message: string, details?: any) {
     super(
       message || MESSAGES.ERROR.VALIDATION_ERROR,
       HTTP_STATUS.BAD_REQUEST,
@@ -40,7 +40,7 @@ export class ValidationError extends AppError {
 }
 
 export class AuthenticationError extends AppError {
-  constructor(message: string = MESSAGES.ERROR.UNAUTHORIZED) {
+  constructor (message: string = MESSAGES.ERROR.UNAUTHORIZED) {
     super(
       message,
       HTTP_STATUS.UNAUTHORIZED,
@@ -51,7 +51,7 @@ export class AuthenticationError extends AppError {
 }
 
 export class AuthorizationError extends AppError {
-  constructor(message: string = MESSAGES.ERROR.FORBIDDEN) {
+  constructor (message: string = MESSAGES.ERROR.FORBIDDEN) {
     super(
       message,
       HTTP_STATUS.FORBIDDEN,
@@ -62,7 +62,7 @@ export class AuthorizationError extends AppError {
 }
 
 export class NotFoundError extends AppError {
-  constructor(message: string = MESSAGES.ERROR.NOT_FOUND) {
+  constructor (message: string = MESSAGES.ERROR.NOT_FOUND) {
     super(
       message,
       HTTP_STATUS.NOT_FOUND,
@@ -73,7 +73,7 @@ export class NotFoundError extends AppError {
 }
 
 export class ConflictError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor (message: string, details?: any) {
     super(
       message,
       HTTP_STATUS.CONFLICT,
@@ -85,7 +85,7 @@ export class ConflictError extends AppError {
 }
 
 export class DatabaseError extends AppError {
-  constructor(message: string = MESSAGES.ERROR.DATABASE_ERROR, details?: any) {
+  constructor (message: string = MESSAGES.ERROR.DATABASE_ERROR, details?: any) {
     super(
       message,
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -97,7 +97,7 @@ export class DatabaseError extends AppError {
 }
 
 export class RateLimitError extends AppError {
-  constructor(message: string = MESSAGES.ERROR.TOO_MANY_REQUESTS) {
+  constructor (message: string = MESSAGES.ERROR.TOO_MANY_REQUESTS) {
     super(
       message,
       HTTP_STATUS.TOO_MANY_REQUESTS,
@@ -108,7 +108,7 @@ export class RateLimitError extends AppError {
 }
 
 export class TokenError extends AppError {
-  constructor(message: string, expired: boolean = false) {
+  constructor (message: string, expired: boolean = false) {
     super(
       message,
       HTTP_STATUS.UNAUTHORIZED,
@@ -119,7 +119,7 @@ export class TokenError extends AppError {
 }
 
 export class AccountError extends AppError {
-  constructor(message: string, code: string) {
+  constructor (message: string, code: string) {
     super(
       message,
       HTTP_STATUS.FORBIDDEN,
