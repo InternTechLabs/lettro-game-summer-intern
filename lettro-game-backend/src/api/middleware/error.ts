@@ -3,12 +3,12 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
 import { Prisma } from '@prisma/client'
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import { AppError, ValidationError, DatabaseError, TokenError, NotFoundError, ConflictError } from '@/utils/errorsUtils'
 import { HTTP_STATUS, MESSAGES, ERROR_CODES } from '@/constants'
 import { logger } from '@/config/logger'
 import { env } from '@/config/env'
-
+const { JsonWebTokenError, TokenExpiredError } = jwt
 interface ErrorResponse {
   success: false
   error: {

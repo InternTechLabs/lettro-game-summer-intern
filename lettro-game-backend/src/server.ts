@@ -7,6 +7,8 @@ import { env } from '@/config/env'
 import { logger } from '@/config/logger'
 import { setupWebSocket } from '@/ws/websocket'
 
+console.log("DATABASE_URL at runtime:", process.env.DATABASE_URL);
+
 const server = createServer(app)
 
 // Setup WebSocket
